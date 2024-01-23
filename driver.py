@@ -39,7 +39,7 @@ parser.add_argument(
     choices=["vgg16", "resnet50", "densenet"],
 )
 parser.add_argument(
-    "--model_path",
+    "--model-path",
     type=str,
     default="models/global_best_model_vgg16_CalTech101.h5",
     help="path to the model's .h5 file",
@@ -51,11 +51,11 @@ parser.add_argument(
     default="CalTech101",
     choices=["CalTech101", "CalTech256", "St_Dogs"],
 )
-parser.add_argument("--weighted_avg", action="store_true")
-parser.add_argument("--train_epochs", type=int, default=50)
-parser.add_argument("--optim_epochs", type=int, default=50)
-parser.add_argument("--prune_per", type=int, default=5)
-parser.add_argument("--model_type", type=str, default="", required=False)
+parser.add_argument("--weighted-avg", action="store_true")
+parser.add_argument("--train-epochs", type=int, default=50)
+parser.add_argument("--optim-epochs", type=int, default=50)
+parser.add_argument("--prune-per", type=int, default=5)
+parser.add_argument("--model-type", type=str, default="", required=False)
 
 args = parser.parse_args()
 
@@ -89,15 +89,13 @@ class_weights = get_class_weights(train_gen.class_indices, TRAIN_PATH)
 
 weighted_avg_str = "_weighted_avg" if args.weighted_avg else ""
 
-MODEL_FOLDER = os.makedirs(
-    os.path.join(
-        "Results",
-        f"Pruned_Models_{MODEL}_{DATA_SET}{weighted_avg_str}_{args.prune_per}per",
-    ),
-    exist_ok=True,
+MODEL_FOLDER = os.path.join(
+    "Results",
+    f"Pruned_Models_{MODEL}_{DATA_SET}{weighted_avg_str}_{args.prune_per}per",
 )
+os.makedirs(MODEL_FOLDER, exist_ok=True)
 LOGFILE = os.path.join(
-    "Results", f"Prune_{MODEL}_{DATA_SET}{weighted_avg_str}_{args.prune_per}per.csv"
+    MODEL_FOLDER, f"Prune_{MODEL}_{DATA_SET}{weighted_avg_str}_{args.prune_per}per.csv"
 )
 
 os.system(f"rm -r {MODEL_FOLDER}/*")
@@ -329,7 +327,6 @@ while (validation_accuracy - max_val_acc >= -0.02) and my_get_all_conv_layers(mo
             model,
             weight_list_per_epoch,
             PRUNING_PERCENTAGE,
-            log_df.shape[0],
             weighted_avg=args.weighted_avg,
             model_type=args.model_type,
         )
@@ -346,7 +343,6 @@ while (validation_accuracy - max_val_acc >= -0.02) and my_get_all_conv_layers(mo
             model,
             weight_list_per_epoch,
             PRUNING_PERCENTAGE,
-            log_df.shape[0],
             weighted_avg=args.weighted_avg,
             model_type=args.model_type,
         )
@@ -362,7 +358,6 @@ while (validation_accuracy - max_val_acc >= -0.02) and my_get_all_conv_layers(mo
             model,
             weight_list_per_epoch,
             PRUNING_PERCENTAGE,
-            log_df.shape[0],
             weighted_avg=args.weighted_avg,
             model_type=args.model_type,
         )

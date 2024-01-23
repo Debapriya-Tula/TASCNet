@@ -1,5 +1,5 @@
 ## Driver command
-# python nlpdriver.py --model-name vgg16 --dataset CalTech101
+# python nlpdriver.py --model-name vgg16 --data-path datasets/movie_reviews_training_data.pkl
 
 import os
 
@@ -40,12 +40,12 @@ parser.add_argument(
     type=str,
     required=True,
     default="vgg16",
-    choices=["vgg16", "resnet50", "densenet"],
+    help="label for the model to create the results folder",
 )
 parser.add_argument(
-    "--model_path",
+    "--model-path",
     type=str,
-    default="models/global_best_model_vgg16_CalTech101.h5",
+    default="models/weights_cnn_moviereviews_sentiment_autotune_continued-reduced-0.99-1000epochs.h5",
     help="path to the model's .h5 file",
 )
 parser.add_argument(
@@ -53,21 +53,21 @@ parser.add_argument(
     type=str,
     required=True,
     default="CalTech101",
-    choices=["CalTech101", "CalTech256", "St_Dogs"],
+    help="label for the dataset to create the results folder"
 )
-parser.add_argument("--weighted_avg", action="store_true")
-parser.add_argument("--train_epochs", type=int, default=50)
-parser.add_argument("--optim_epochs", type=int, default=50)
-parser.add_argument("--prune_per", type=int, default=5)
-parser.add_argument("--model_type", type=str, default="", required=False)
 parser.add_argument(
-    "--data_path", type=str, default="datasets/movie_reviews_training_data.pkl"
+    "--data-path", type=str, default="datasets/movie_reviews_training_data.pkl"
 )
+parser.add_argument("--weighted-avg", action="store_true")
+parser.add_argument("--train-epochs", type=int, default=50)
+parser.add_argument("--optim-epochs", type=int, default=50)
+parser.add_argument("--prune-per", type=int, default=5)
+parser.add_argument("--model-type", type=str, default="", required=False, help="pass `resnet` to make sure equal number of filters to be pruned in each iteration")
 
 args = parser.parse_args()
 
 BATCH_SIZE = 32
-DATA_SET = "MovieReviewSentiment"
+DATA_SET = args.dataset
 
 TRAINING_EPOCHS = args.train_epochs
 OPTIMIZATION_EPOCHS = args.optim_epochs
@@ -83,15 +83,13 @@ class_weights = dict(Counter(train_data[1]))
 MODEL = args.model_name
 weighted_avg_str = "_weighted_avg" if args.weighted_avg else ""
 
-MODEL_FOLDER = os.makedirs(
-    os.path.join(
-        "Results",
-        f"Pruned_Models_{MODEL}_{DATA_SET}{weighted_avg_str}_{args.prune_per}per",
-    ),
-    exist_ok=True,
+MODEL_FOLDER = os.path.join(
+    "Results",
+    f"Pruned_Models_{MODEL}_{DATA_SET}{weighted_avg_str}_{args.prune_per}per",
 )
+os.makedirs(MODEL_FOLDER, exist_ok=True)
 LOGFILE = os.path.join(
-    "Results", f"Prune_{MODEL}_{DATA_SET}{weighted_avg_str}_{args.prune_per}per.csv"
+    MODEL_FOLDER, f"Prune_{MODEL}_{DATA_SET}{weighted_avg_str}_{args.prune_per}per.csv"
 )
 
 os.system(f"rm -r {MODEL_FOLDER}/*")
@@ -330,7 +328,6 @@ while (validation_accuracy - max_val_acc >= -0.02) and my_get_all_conv_layers(mo
             model,
             weight_list_per_epoch,
             PRUNING_PERCENTAGE,
-            log_df.shape[0],
             weighted_avg=args.weighted_avg,
             model_type=args.model_type,
         )
@@ -347,7 +344,6 @@ while (validation_accuracy - max_val_acc >= -0.02) and my_get_all_conv_layers(mo
             model,
             weight_list_per_epoch,
             PRUNING_PERCENTAGE,
-            log_df.shape[0],
             weighted_avg=args.weighted_avg,
             model_type=args.model_type,
         )
@@ -363,7 +359,6 @@ while (validation_accuracy - max_val_acc >= -0.02) and my_get_all_conv_layers(mo
             model,
             weight_list_per_epoch,
             PRUNING_PERCENTAGE,
-            log_df.shape[0],
             weighted_avg=args.weighted_avg,
             model_type=args.model_type,
         )
